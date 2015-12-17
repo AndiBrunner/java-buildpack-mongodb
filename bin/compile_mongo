@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+####### Configure environment
+
+set -o errexit    # always exit on error
+set -o pipefail   # don't ignore exit codes when piping output
+set -o posix      # more strict failures in subshells
+# set -x          # enable debugging
+
+# Configure directories
+build_dir=$1
+cache_dir=$2
+env_dir=$3
+bp_dir=$(cd $(dirname $0); cd ..; pwd)
+mkdir -p $build_dir/.mongo
+warnings=$(mktemp)
+
+# Install mongodb to use mongo commands
+version=$MONGO_DB_VERSION
+echo "Downloading and installing mongodb version ${version}..."
+download_url="https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${version}.tgz"
+curl $download_url -s -o - | tar xzf - -C /tmp
+
+# Move mongodb binaries into the app directory
+mv /tmp/mongodb-linux-x86_64-${version}/* $build_dir/.mongo
+chmod +x $build_dir/.mongo/bin/*
+
+$build_dir/.mongo/bin/mongo -version
