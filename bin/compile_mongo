@@ -19,10 +19,15 @@ warnings=$(mktemp)
 version=$MONGO_DB_VERSION
 echo "Downloading and installing mongodb version ${version}..."
 download_url="https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${version}.tgz"
-curl $download_url -s -o - | tar xzf - -C /tmp
+
+mkdir -p $cache_dir
+mkdir -p $cache_dir/.mongo
+
+curl $download_url -s -o - | tar xzf - -C $cache_dir/.mongo
 
 # Move mongodb binaries into the app directory
-mv /tmp/mongodb-linux-x86_64-${version}/* $build_dir/.mongo
+mv $cache_dir/.mongo/mongodb-linux-x86_64-${version}/* $build_dir/.mongo
 chmod +x $build_dir/.mongo/bin/*
 
+rm $cache_dir/.mongo -r
 $build_dir/.mongo/bin/mongo -version
